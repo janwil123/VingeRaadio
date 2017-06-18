@@ -34,6 +34,7 @@
 #include <Wire.h>
 #include <radio.h>
 #include <TEA5767.h>
+#include <LiquidCrystal_I2C.h> // Using version 1.2.1
 
 /// The band that will be tuned by this sketch is FM.
 #define FIX_BAND RADIO_BAND_FM
@@ -48,11 +49,22 @@ byte test2;
 
 const int buttonPin = 2;     // the number of the pushbutton pin
 
-int buttonState = 0;         // variable for reading the pushbutton status
+int buttonState = LOW;         // variable for reading the pushbutton status
 
-int sagedused[4] = {8850, 9440, 9520, 9940};
+int lastButtonState = LOW;
+
+int sagedused[7] = {10610, 10360, 10570, 10470, 9940, 8850, 10020};
+char* jaamanimed[7]={"Vikerraadio     ", 
+                     "Raadio 2        ", 
+                     "Klassikaraadio  ", 
+                     "Ring FM         ", 
+                     "Star FM         ",
+                     "Raadio Elmar    ", 
+                     "Raadio Kuku     "};
 
 int jaam = 0;
+
+LiquidCrystal_I2C lcd(0x3f, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); 
 
 /// Setup a FM only radio configuration
 /// with some debugging on the Serial port
@@ -75,6 +87,9 @@ void setup() {
 
     // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
+
+  lcd.begin(16,2); // sixteen characters across - 2 lines
+  lcd.backlight();
 } // setup
 
 
@@ -92,14 +107,26 @@ void loop() {
   radio.debugAudioInfo();
 
   buttonState = digitalRead(buttonPin);
-  if (buttonState == HIGH) {
-    // button pressed
-    Serial.print("Button pressed");
-    jaam = (jaam + 1) % 4; 
-    radio.setBandFrequency(FIX_BAND, sagedused[jaam]);
-  } 
 
-  delay(3000);
+  if (lastButtonState == LOW) {
+    if (buttonState == HIGH) {
+      // button pressed
+      lastButtonState=HIGH;
+      Serial.print("Button pressed");
+      jaam = (jaam + 1) % 7; 
+      radio.setFrequency(sagedused[jaam]);
+      lcd.setCursor(0,0);
+      lcd.print(jaamanimed[jaam]);
+      // 8th character - 2nd line 
+      lcd.setCursor(8,1);
+      lcd.print(String(sagedused[jaam]/100.0)+" ");
+    } 
+  } else { //lastButtonState == HIGH
+    if (buttonState == LOW) {
+      lastButtonState = LOW;
+    }
+  }
+  //delay(500);
 } // loop
 
 // End.
