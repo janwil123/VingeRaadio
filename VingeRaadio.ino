@@ -49,11 +49,11 @@ byte test2;
 
 const int buttonPin = 2;     // the number of the pushbutton pin
 
-int buttonState = LOW;         // variable for reading the pushbutton status
+int buttonState = HIGH;         // variable for reading the pushbutton status
 
-int lastButtonState = LOW;
+int lastButtonState = HIGH;
 
-int sagedused[7] = {10610, 10360, 10570, 10470, 9940, 8850, 10020};
+int sagedused[7] = {10670, 10360, 10570, 10470, 9940, 8850, 10020};
 char* jaamanimed[7]={"Vikerraadio     ", 
                      "Raadio 2        ", 
                      "Klassikaraadio  ", 
@@ -87,7 +87,7 @@ void setup() {
 
     // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
-
+  digitalWrite(buttonPin, HIGH);
   lcd.begin(16,2); // sixteen characters across - 2 lines
   lcd.backlight();
 } // setup
