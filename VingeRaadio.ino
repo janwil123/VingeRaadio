@@ -39,8 +39,7 @@
 /// The band that will be tuned by this sketch is FM.
 #define FIX_BAND RADIO_BAND_FM
 
-/// The station that will be tuned by this sketch is 89.30 MHz.
-#define FIX_STATION 9940
+#define JAAMADE_ARV 9
 
 TEA5767 radio;    // Create an instance of Class for Si4703 Chip
 
@@ -53,14 +52,16 @@ int buttonState = HIGH;         // variable for reading the pushbutton status
 
 int lastButtonState = HIGH;
 
-int sagedused[7] = {10670, 10360, 10570, 10470, 9940, 8850, 10020};
-char* jaamanimed[7]={"Vikerraadio     ", 
+int sagedused[JAAMADE_ARV] = {10670, 10360, 10570, 10470, 9940, 8850, 10020, 9520, 9860};
+char* jaamanimed[JAAMADE_ARV]={"Vikerraadio     ", 
                      "Raadio 2        ", 
                      "Klassikaraadio  ", 
                      "Ring FM         ", 
                      "Star FM         ",
                      "Raadio Elmar    ", 
-                     "Raadio Kuku     "};
+                     "Raadio Kuku     ",
+                     "Sky Plus        ",
+                     "Retro FM        "};
 
 int jaam = 0;
 
@@ -81,7 +82,7 @@ void setup() {
   radio.debugEnable();
 
   // HERE: adjust the frequency to a local sender
-  radio.setBandFrequency(FIX_BAND, FIX_STATION); // hr3 nearby Frankfurt in Germany
+  radio.setBandFrequency(FIX_BAND, sagedused[0]); // Esimene jaam
   radio.setVolume(2);
   radio.setMono(false);
 
@@ -113,7 +114,7 @@ void loop() {
       // button pressed
       lastButtonState=HIGH;
       Serial.print("Button pressed");
-      jaam = (jaam + 1) % 7; 
+      jaam = (jaam + 1) % JAAMADE_ARV; 
       radio.setFrequency(sagedused[jaam]);
       lcd.setCursor(0,0);
       lcd.print(jaamanimed[jaam]);
