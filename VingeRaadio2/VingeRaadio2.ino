@@ -11,14 +11,7 @@ int SDIO = A4;
 int SCLK = A5;
 
 Si4703_Breakout radio(resetPin, SDIO, SCLK);
-int channel=994;
-int volume=3;
 char rdsBuffer[10];
-
-// Pins for the LCD
-
-//const int rs = 12, en = 11, d4 = 6, d5 = 5, d6 = 4, d7 = 3;
-//LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 // Pins for the bush buttons
 
@@ -36,49 +29,53 @@ int pinsState[4] = {0,0,0,0};
 
 bool pinsPressed = false;
 
-int sagedused[9] = { 1067,
-                     1036, 
-                     1057, 
-                     1047, 
-                     994, 
-                     885, 
-                     1002, 
-                     952, 
-                     986};
+const int jaamasid=15;
+
+const int sagedused[jaamasid] = { 
+  885,
+  890,
+  897,
+  903,
+  944,
+  952,
+  986,
+  994,
+  1002,
+  1030,
+  1036,
+  1047,
+  1057,
+  1061,
+  1067};
                      
-char* jaamanimed[9]={"Vikerraadio     ", 
-                     "Raadio 2        ", 
-                     "Klassikaraadio  ", 
-                     "Ring FM         ", 
-                     "Star FM         ",
-                     "Raadio Elmar    ", 
-                     "Raadio Kuku     ",
-                     "Sky Plus        ",
-                     "Retro FM        "};
+const char* jaamanimed[jaamasid]={
+  "Raadio Elmar    ",
+  "Tartu Pereraadio",
+  "PWR Hit Radio   ",
+  "Klassikaraadio  ",
+  "Raadio 4        ",
+  "Sky Plus        ",
+  "Retro FM        ",
+  "Star FM         ",
+  "Raadio Kuku     ",
+  "Hit FM          ",
+  "Raadio 2        ",
+  "Ring FM         ",
+  "Klassikaraadio  ",
+  "Vikerraadio     ",
+  "Vikerraadio     "};
 
 int jaam = 0;
 
 void setup()
 {
   Serial.begin(9600);
-  Serial.println("\n\nSi4703_Breakout Test Sketch");
-  Serial.println("===========================");  
-  Serial.println("a b     Favourite stations");
-  Serial.println("+ -     Volume (max 15)");
-  Serial.println("u d     Seek up / down");
-  Serial.println("r       Listen for RDS Data (15 sec timeout)");
-  Serial.println("Send me a command letter.");
-  
 
   radio.powerOn();
   Serial.println("Chip booted.");
-  radio.setChannel(channel);
-  radio.setVolume(volume);
-  displayInfo();
-
+  radio.setVolume(15);
   lcd.begin(16, 2);
-  lcd.setCursor(0, 0);
-  lcd.print("Hello, world!");
+  vahetaJaama(0);
 
   pinMode(button1Pin, INPUT);
   digitalWrite(button1Pin, HIGH);
@@ -97,10 +94,22 @@ void loop()
   button4State = digitalRead(button4Pin);
   button8State = digitalRead(button8Pin);
 
-  Serial.println(button1State);
+  //Serial.println(button1State);
   
   if ((button1State==LOW) || (button2State==LOW) || (button4State==LOW) || (button8State==LOW)){
-    Serial.println("Midagi vajutati");
+    if (button1State==LOW) {
+      Serial.println("Vajutati nupp 1");
+    }
+    if (button2State==LOW) {
+      Serial.println("Vajutati nupp 2");
+    }
+    if (button4State==LOW) {
+      Serial.println("Vajutati nupp 4");
+    }
+    if (button8State==LOW) {
+      Serial.println("Vajutati nupp 8");
+    }
+    
     pinsPressed = true;
     pinsState[0] = (pinsState[0] || (button1State==LOW));
     pinsState[1] = (pinsState[1] || (button2State==LOW));
@@ -111,6 +120,9 @@ void loop()
     if (pinsPressed){
       jaam = pinsState[0] + 2*pinsState[1] + 4*pinsState[2] + 8*pinsState[3]-1;
       Serial.println(jaam);
+      //Change the station
+      vahetaJaama(jaam);
+      //Reset pins
       pinsState[0] = 0;
       pinsState[1] = 0;
       pinsState[2] = 0;
@@ -118,64 +130,15 @@ void loop()
       pinsPressed = false;
     }
   }
-  
-  if (Serial.available())
-  {
-    char ch = Serial.read();
-    if (ch == 'u') 
-    {
-      channel = radio.seekUp();
-      displayInfo();
-    } 
-    else if (ch == 'd') 
-    {
-      channel = radio.seekDown();
-      displayInfo();
-    } 
-    else if (ch == '+') 
-    {
-      volume ++;
-      if (volume == 16) volume = 15;
-      radio.setVolume(volume);
-      displayInfo();
-    } 
-    else if (ch == '-') 
-    {
-      volume --;
-      if (volume < 0) volume = 0;
-      radio.setVolume(volume);
-      displayInfo();
-    } 
-    else if (ch == 'a')
-    {
-      channel = 986; // Retro FM
-      radio.setChannel(channel);
-      displayInfo();
-    }
-    else if (ch == 'b')
-    {
-      channel = 1036; // Raadio 2
-      radio.setChannel(channel);
-      displayInfo();
-    }
-    else if (ch == 'c')
-    {
-      channel = 1057; // Klassikaraadio
-      radio.setChannel(channel);
-      displayInfo();
-    }
-    else if (ch == 'r')
-    {
-      Serial.println("RDS listening");
-      radio.readRDS(rdsBuffer, 30000);
-      Serial.print("RDS heard:");
-      Serial.println(rdsBuffer);      
-    }
-  }
 }
 
-void displayInfo()
-{
-   Serial.print("Channel:"); Serial.print(channel); 
-   Serial.print(" Volume:"); Serial.println(volume); 
+void vahetaJaama(int jaam){
+      radio.setChannel(sagedused[jaam]);
+      //Display station number and name
+      lcd.setCursor(0,0);
+      lcd.print(String(jaam+1)+". "+jaamanimed[jaam]);
+      // 8th character - 2nd line 
+      lcd.setCursor(8,1);
+      lcd.print(String(sagedused[jaam]/10.0)+" ");
 }
+
