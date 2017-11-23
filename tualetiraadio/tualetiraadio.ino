@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
 
-#define ARDUINO_RX 8//should connect to TX of the Serial MP3 Player module
-#define ARDUINO_TX 7//connect to RX of the module
+#define ARDUINO_RX 7//should connect to TX of the Serial MP3 Player module
+#define ARDUINO_TX 8//connect to RX of the module
 SoftwareSerial myMP3(ARDUINO_RX, ARDUINO_TX);
 
 static int8_t Send_buf[6] = {0} ;
@@ -64,7 +64,7 @@ void loop()
   if (not(isPlaying)) {
     if (reading>600) {
       isPlaying = true;
-      playWithVolume(0X1F01);//play the first song with volume 15(0x0F) class
+      playWithVolume(0X1001);//play the first song with volume 15(0x0F) class
     }
   }
   else {
@@ -73,7 +73,7 @@ void loop()
       mp3Basic(CMD_STOP);
      }
   }
-
+ delay(1000);
   
 }
 
